@@ -50,34 +50,31 @@ def tm_info():
     return jsonify(info) if info else jsonify({'error': 'Not found'}), 404
 
 
-@app.route('/api/defect_types/<part_type>')
-def defect_types(part_type):
-    """불량유형 목록 반환"""
-    types = db.get_defect_types(part_type)
+@app.route('/api/defect_type_categories')
+def defect_type_categories():
+    """해당 공정에서 사용 가능한 불량유형 카테고리 (Setting/공정불량) 반환"""
+    part_type = request.args.get('part_type', '1Part')
+    process_name = request.args.get('process', '')
+
+    if not process_name:
+        return jsonify({'error': 'Missing parameters'}), 400
+
+    categories = db.get_available_defect_types(part_type, process_name)
+    return jsonify(categories)
+
+
+@app.route('/api/defect_types')
+def defect_types():
+    """공정별, 불량유형별 불량 목록 반환"""
+    part_type = request.args.get('part_type', '1Part')
+    process_name = request.args.get('process', '')
+    defect_type = request.args.get('defect_type', '')
+
+    if not process_name or not defect_type:
+        return jsonify({'error': 'Missing parameters'}), 400
+
+    types = db.get_defect_types_for_process(part_type, process_name, defect_type)
     return jsonify(types)
-
-
-@app.route('/api/save', methods=['POST'])
-def save_record():
-    """불량 데이터 저장"""
-    data = request.json
-
-    record_date = data.get('date')
-    part_type = data.get('part_type')
-    process_name = data.get('process')
-    tm_no = data.get('tm_no')
-    code = data.get('code')
-    품명 = data.get('품명')
-    defects = data.get('defects', {})
-
-    if not all([record_date, part_type, process_name, tm_no]):
-        return jsonify({'error': 'Missing required fields'}), 400
-
-    try:
-        db.save_defect_record(record_date, part_type, process_name, tm_no, code, 품명, defects)
-        return jsonify({'success': True, 'message': '저장 완료'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/save_bulk', methods=['POST'])
@@ -88,9 +85,10 @@ def save_bulk_records():
     record_date = data.get('date')
     part_type = data.get('part_type')
     process_name = data.get('process')
+    defect_type = data.get('defect_type')
     records = data.get('records', [])
 
-    if not all([record_date, part_type, process_name]):
+    if not all([record_date, part_type, process_name, defect_type]):
         return jsonify({'error': 'Missing required fields'}), 400
 
     if not records:
@@ -105,7 +103,7 @@ def save_bulk_records():
             defects = record.get('defects', {})
 
             if tm_no and defects:
-                db.save_defect_record(record_date, part_type, process_name, tm_no, code, 품명, defects)
+                db.save_defect_record(record_date, part_type, process_name, defect_type, tm_no, code, 품명, defects)
                 count += 1
 
         return jsonify({'success': True, 'count': count, 'message': f'{count}건 저장 완료'})
@@ -124,8 +122,8 @@ def export_excel():
         return jsonify({'error': 'Missing parameters'}), 400
 
     try:
-        filename = export_daily_excel(record_date, part_type)
-        return jsonify({'success': True, 'filename': filename})
+        filenames = export_daily_excel(record_date, part_type)
+        return jsonify({'success': True, 'filenames': filenames})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -146,11 +144,12 @@ def daily_records():
     record_date = request.args.get('date')
     part_type = request.args.get('part_type')
     process_name = request.args.get('process')
+    defect_type = request.args.get('defect_type')
 
-    if not all([record_date, part_type, process_name]):
+    if not all([record_date, part_type, process_name, defect_type]):
         return jsonify({'error': 'Missing parameters'}), 400
 
-    records = db.get_daily_records(record_date, part_type, process_name)
+    records = db.get_daily_records(record_date, part_type, process_name, defect_type)
     return jsonify(records)
 
 

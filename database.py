@@ -12,6 +12,12 @@ PART_PROCESSES = {
     '2Part': ['성형', '소결', '정형', '후처리']
 }
 
+# Setting이 있는 공정
+SETTING_PROCESSES = {
+    '1Part': ['성형', '정형', '가공'],
+    '2Part': ['성형', '정형', '가공']
+}
+
 
 def get_connection():
     """DB 연결 반환"""
@@ -44,15 +50,17 @@ def init_db():
         )
     ''')
 
-    # 2. 불량유형 마스터 테이블
+    # 2. 불량유형 설정 테이블 (defect_config.xlsx 기반)
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS defect_types (
+        CREATE TABLE IF NOT EXISTS defect_config (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             part_type TEXT NOT NULL,
+            defect_type TEXT NOT NULL,
+            defect_id TEXT NOT NULL,
             defect_name TEXT NOT NULL,
+            process_name TEXT NOT NULL,
             display_order INTEGER,
-            is_active INTEGER DEFAULT 1,
-            UNIQUE(part_type, defect_name)
+            UNIQUE(part_type, defect_type, defect_id, process_name)
         )
     ''')
 
@@ -63,21 +71,24 @@ def init_db():
             record_date DATE NOT NULL,
             part_type TEXT NOT NULL,
             process_name TEXT NOT NULL,
+            defect_type TEXT NOT NULL,
             tm_no TEXT NOT NULL,
             code INTEGER,
             품명 TEXT,
+            defect_id TEXT NOT NULL,
             defect_name TEXT NOT NULL,
             quantity INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(record_date, part_type, process_name, tm_no, defect_name)
+            UNIQUE(record_date, part_type, process_name, defect_type, tm_no, defect_id)
         )
     ''')
 
     # 인덱스 생성
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tm_master_part ON tm_master(part_type)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tm_master_규격 ON tm_master(규격)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_defect_config_lookup ON defect_config(part_type, defect_type, process_name)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_defect_records_date ON defect_records(record_date)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_defect_records_part ON defect_records(part_type, process_name)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_defect_records_lookup ON defect_records(part_type, process_name, defect_type)')
 
     conn.commit()
     conn.close()
@@ -132,47 +143,61 @@ def sync_tm_master():
     print("TM 마스터 동기화 완료")
 
 
-def sync_defect_types():
-    """Part1, Part2 Excel 파일에서 불량유형 동기화"""
+def sync_defect_config():
+    """defect_config.xlsx에서 공정별 불량유형 설정 동기화"""
+    file_path = os.path.join(DATA_DIR, 'defect_config.xlsx')
+    if not os.path.exists(file_path):
+        print(f"파일 없음: {file_path}")
+        return
+
     conn = get_connection()
     cursor = conn.cursor()
 
-    files = {
-        '1Part': 'Part1_20260130.xlsx',
-        '2Part': 'Part2_20260130.xlsx'
+    # 기존 데이터 삭제
+    cursor.execute('DELETE FROM defect_config')
+
+    xlsx = pd.ExcelFile(file_path)
+
+    # 시트 매핑: 시트명 → (part_type, defect_type)
+    sheet_mapping = {
+        '1Part_Setting': ('1Part', 'Setting'),
+        '1Part_Process': ('1Part', '공정불량'),
+        '2Part_Setting': ('2Part', 'Setting'),
+        '2Part_Process': ('2Part', '공정불량')
     }
 
-    # 기본 컬럼 (불량유형에서 제외)
-    exclude_columns = ['code', 'TM_No', '품명', '합계']
-
-    for part_type, filename in files.items():
-        file_path = os.path.join(DATA_DIR, filename)
-        if not os.path.exists(file_path):
-            print(f"파일 없음: {file_path}")
+    for sheet_name, (part_type, defect_type) in sheet_mapping.items():
+        if sheet_name not in xlsx.sheet_names:
             continue
 
-        xlsx = pd.ExcelFile(file_path)
-        # 첫 번째 시트에서 불량유형 컬럼 추출
-        df = pd.read_excel(xlsx, sheet_name=xlsx.sheet_names[0])
+        df = pd.read_excel(xlsx, sheet_name=sheet_name)
 
-        defect_columns = [col for col in df.columns if col not in exclude_columns]
+        # 공정 컬럼 찾기 (ID, 불량명 제외)
+        process_columns = [col for col in df.columns if col not in ['ID', '불량명']]
 
-        for order, defect_name in enumerate(defect_columns):
-            cursor.execute('''
-                INSERT OR IGNORE INTO defect_types (part_type, defect_name, display_order)
-                VALUES (?, ?, ?)
-            ''', (part_type, defect_name, order))
+        for order, (_, row) in enumerate(df.iterrows()):
+            defect_id = row['ID']
+            defect_name = row['불량명']
+
+            for process_name in process_columns:
+                # 'Y' 표시된 경우만 추가
+                if pd.notna(row.get(process_name)) and str(row.get(process_name)).upper() == 'Y':
+                    cursor.execute('''
+                        INSERT OR REPLACE INTO defect_config
+                        (part_type, defect_type, defect_id, defect_name, process_name, display_order)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    ''', (part_type, defect_type, defect_id, defect_name, process_name, order))
 
     conn.commit()
     conn.close()
-    print("불량유형 동기화 완료")
+    print("불량유형 설정 동기화 완료")
 
 
 def sync_all():
     """모든 Excel 데이터를 DB에 동기화"""
     init_db()
     sync_tm_master()
-    sync_defect_types()
+    sync_defect_config()
     print("전체 동기화 완료")
 
 
@@ -219,50 +244,85 @@ def get_tm_info(part_type, tm_no, process_name):
     return dict(result) if result else None
 
 
-def get_defect_types(part_type):
-    """불량유형 목록 조회"""
+def get_defect_types_for_process(part_type, process_name, defect_type):
+    """공정별, 불량유형별 불량 목록 조회"""
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute('''
-        SELECT defect_name FROM defect_types
-        WHERE part_type = ? AND is_active = 1
+        SELECT defect_id, defect_name FROM defect_config
+        WHERE part_type = ? AND process_name = ? AND defect_type = ?
         ORDER BY display_order
-    ''', (part_type,))
+    ''', (part_type, process_name, defect_type))
 
     results = cursor.fetchall()
     conn.close()
-    return [row['defect_name'] for row in results]
+    return [{'id': row['defect_id'], 'name': row['defect_name']} for row in results]
 
 
-def save_defect_record(record_date, part_type, process_name, tm_no, code, 품명, defects):
+def get_available_defect_types(part_type, process_name):
+    """해당 공정에서 사용 가능한 불량유형 목록 (Setting/공정불량)"""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT DISTINCT defect_type FROM defect_config
+        WHERE part_type = ? AND process_name = ?
+    ''', (part_type, process_name))
+
+    results = cursor.fetchall()
+    conn.close()
+    return [row['defect_type'] for row in results]
+
+
+def save_defect_record(record_date, part_type, process_name, defect_type, tm_no, code, 품명, defects):
     """불량 데이터 저장"""
     conn = get_connection()
     cursor = conn.cursor()
 
-    for defect_name, quantity in defects.items():
+    for defect_id, data in defects.items():
+        quantity = data.get('quantity', 0) if isinstance(data, dict) else data
+        defect_name = data.get('name', '') if isinstance(data, dict) else ''
+
         if quantity and int(quantity) > 0:
             cursor.execute('''
                 INSERT OR REPLACE INTO defect_records
-                (record_date, part_type, process_name, tm_no, code, 품명, defect_name, quantity)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (record_date, part_type, process_name, tm_no, code, 품명, defect_name, int(quantity)))
+                (record_date, part_type, process_name, defect_type, tm_no, code, 품명, defect_id, defect_name, quantity)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (record_date, part_type, process_name, defect_type, tm_no, code, 품명, defect_id, defect_name, int(quantity)))
 
     conn.commit()
     conn.close()
 
 
-def get_daily_records(record_date, part_type, process_name):
+def get_daily_records(record_date, part_type, process_name, defect_type):
     """일별 불량 기록 조회"""
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute('''
-        SELECT tm_no, code, 품명, defect_name, quantity
+        SELECT tm_no, code, 품명, defect_id, defect_name, quantity
         FROM defect_records
-        WHERE record_date = ? AND part_type = ? AND process_name = ?
-        ORDER BY tm_no, defect_name
-    ''', (record_date, part_type, process_name))
+        WHERE record_date = ? AND part_type = ? AND process_name = ? AND defect_type = ?
+        ORDER BY tm_no, defect_id
+    ''', (record_date, part_type, process_name, defect_type))
+
+    results = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in results]
+
+
+def get_daily_records_for_export(record_date, part_type, defect_type):
+    """Excel 출력용 일별 기록 조회 (공정별로 그룹핑)"""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT process_name, tm_no, code, 품명, defect_id, defect_name, quantity
+        FROM defect_records
+        WHERE record_date = ? AND part_type = ? AND defect_type = ?
+        ORDER BY process_name, tm_no, defect_id
+    ''', (record_date, part_type, defect_type))
 
     results = cursor.fetchall()
     conn.close()

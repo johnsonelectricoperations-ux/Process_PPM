@@ -30,36 +30,37 @@
         }
         .form-row {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 15px;
             flex-wrap: wrap;
             align-items: flex-end;
         }
         .form-group {
-            min-width: 150px;
+            min-width: 130px;
         }
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
             color: #555;
+            font-size: 13px;
         }
         select, input {
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 13px;
         }
         select:focus, input:focus {
             outline: none;
             border-color: #007bff;
         }
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
         }
         .btn-primary {
             background: #007bff;
@@ -106,17 +107,17 @@
         /* 테이블 스타일 */
         .input-table-container {
             overflow-x: auto;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         .input-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12px;
         }
         .input-table th {
             background: #007bff;
             color: white;
-            padding: 8px 4px;
+            padding: 6px 3px;
             text-align: center;
             font-weight: bold;
             position: sticky;
@@ -125,7 +126,7 @@
         }
         .input-table td {
             border: 1px solid #ddd;
-            padding: 4px;
+            padding: 3px;
             text-align: center;
             vertical-align: middle;
         }
@@ -136,14 +137,14 @@
             background: #e7f3ff;
         }
         .input-table input[type="number"] {
-            width: 50px;
-            padding: 4px;
+            width: 45px;
+            padding: 3px;
             text-align: center;
             border: 1px solid #ccc;
         }
         .input-table input[type="text"] {
-            width: 100px;
-            padding: 4px;
+            width: 90px;
+            padding: 3px;
         }
         .input-table .tm-cell {
             position: relative;
@@ -159,15 +160,16 @@
         .row-num {
             background: #f0f0f0;
             font-weight: bold;
-            width: 30px;
+            width: 25px;
         }
         .delete-btn {
             background: #dc3545;
             color: white;
             border: none;
-            padding: 2px 6px;
+            padding: 2px 5px;
             cursor: pointer;
             border-radius: 3px;
+            font-size: 11px;
         }
 
         /* 자동완성 */
@@ -198,16 +200,16 @@
         }
 
         .button-row {
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
 
         .section-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 15px;
             margin-bottom: 10px;
             color: #333;
         }
@@ -215,8 +217,22 @@
         .defect-header {
             writing-mode: vertical-rl;
             text-orientation: mixed;
-            min-width: 25px;
-            font-size: 11px;
+            min-width: 20px;
+            font-size: 10px;
+        }
+
+        .selection-info {
+            background: #e7f3ff;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        .selection-info span {
+            margin-right: 20px;
+        }
+        .selection-info strong {
+            color: #007bff;
         }
     </style>
 </head>
@@ -233,7 +249,7 @@
             <div class="form-group">
                 <label>1차 분류 (Part)</label>
                 <select id="part_type" onchange="onPartChange()">
-                    <option value="">선택하세요</option>
+                    <option value="">선택</option>
                     <option value="1Part">1Part</option>
                     <option value="2Part">2Part</option>
                 </select>
@@ -241,7 +257,13 @@
             <div class="form-group">
                 <label>2차 분류 (공정)</label>
                 <select id="process" onchange="onProcessChange()">
-                    <option value="">선택하세요</option>
+                    <option value="">선택</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>3차 분류 (불량유형)</label>
+                <select id="defect_type" onchange="onDefectTypeChange()">
+                    <option value="">선택</option>
                 </select>
             </div>
             <div class="form-group">
@@ -249,11 +271,18 @@
             </div>
         </div>
 
+        <!-- 선택 정보 표시 -->
+        <div class="selection-info" id="selection_info" style="display: none;">
+            <span>Part: <strong id="sel_part">-</strong></span>
+            <span>공정: <strong id="sel_process">-</strong></span>
+            <span>불량유형: <strong id="sel_defect_type">-</strong></span>
+        </div>
+
         <!-- 다중 입력 테이블 -->
         <div id="table_section" style="display: none;">
             <div class="section-title">불량 입력 (다중 행)</div>
             <div class="button-row" style="margin-bottom: 10px;">
-                <button class="btn btn-primary" onclick="addRow()">+ 행 추가</button>
+                <button class="btn btn-primary btn-sm" onclick="addRow()">+ 행 추가</button>
                 <button class="btn btn-danger btn-sm" onclick="clearAllRows()">전체 삭제</button>
             </div>
 
@@ -261,13 +290,12 @@
                 <table class="input-table" id="input_table">
                     <thead>
                         <tr id="header_row">
-                            <th style="width:30px;">#</th>
-                            <th style="width:110px;">TM-No</th>
-                            <th style="width:120px;">품명</th>
-                            <th style="width:70px;">Code</th>
-                            <th style="width:50px;">합계</th>
-                            <!-- 불량 항목 헤더는 동적으로 추가 -->
-                            <th style="width:40px;">삭제</th>
+                            <th style="width:25px;">#</th>
+                            <th style="width:100px;">TM-No</th>
+                            <th style="width:100px;">품명</th>
+                            <th style="width:60px;">Code</th>
+                            <th style="width:45px;">합계</th>
+                            <th style="width:35px;">삭제</th>
                         </tr>
                     </thead>
                     <tbody id="table_body">
@@ -293,9 +321,12 @@
         function onPartChange() {
             const partType = document.getElementById('part_type').value;
             const processSelect = document.getElementById('process');
+            const defectTypeSelect = document.getElementById('defect_type');
 
-            processSelect.innerHTML = '<option value="">선택하세요</option>';
+            processSelect.innerHTML = '<option value="">선택</option>';
+            defectTypeSelect.innerHTML = '<option value="">선택</option>';
             document.getElementById('table_section').style.display = 'none';
+            document.getElementById('selection_info').style.display = 'none';
 
             if (!partType) return;
 
@@ -310,56 +341,88 @@
                         processSelect.appendChild(option);
                     });
                 });
-
-            // 불량유형 조회
-            fetch(`/api/defect_types/${partType}`)
-                .then(res => res.json())
-                .then(types => {
-                    currentDefects = types;
-                });
         }
 
         // 공정 변경 시
         function onProcessChange() {
             const partType = document.getElementById('part_type').value;
             const process = document.getElementById('process').value;
+            const defectTypeSelect = document.getElementById('defect_type');
 
-            if (!partType || !process) {
-                document.getElementById('table_section').style.display = 'none';
-                return;
-            }
+            defectTypeSelect.innerHTML = '<option value="">선택</option>';
+            document.getElementById('table_section').style.display = 'none';
+            document.getElementById('selection_info').style.display = 'none';
 
-            // 테이블 헤더 구성
-            buildTableHeader();
-            // 기존 행 초기화
-            document.getElementById('table_body').innerHTML = '';
-            rowCounter = 0;
-            // 첫 번째 행 추가
-            addRow();
+            if (!partType || !process) return;
 
-            document.getElementById('table_section').style.display = 'block';
+            // 불량유형 카테고리 조회 (Setting/공정불량)
+            fetch(`/api/defect_type_categories?part_type=${partType}&process=${process}`)
+                .then(res => res.json())
+                .then(categories => {
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat;
+                        option.textContent = cat;
+                        defectTypeSelect.appendChild(option);
+                    });
+                });
+        }
+
+        // 불량유형 변경 시
+        function onDefectTypeChange() {
+            const partType = document.getElementById('part_type').value;
+            const process = document.getElementById('process').value;
+            const defectType = document.getElementById('defect_type').value;
+
+            document.getElementById('table_section').style.display = 'none';
+            document.getElementById('selection_info').style.display = 'none';
+
+            if (!partType || !process || !defectType) return;
+
+            // 선택 정보 표시
+            document.getElementById('sel_part').textContent = partType;
+            document.getElementById('sel_process').textContent = process;
+            document.getElementById('sel_defect_type').textContent = defectType;
+            document.getElementById('selection_info').style.display = 'block';
+
+            // 불량 목록 조회
+            fetch(`/api/defect_types?part_type=${partType}&process=${process}&defect_type=${defectType}`)
+                .then(res => res.json())
+                .then(defects => {
+                    currentDefects = defects;
+                    // 테이블 헤더 구성
+                    buildTableHeader();
+                    // 기존 행 초기화
+                    document.getElementById('table_body').innerHTML = '';
+                    rowCounter = 0;
+                    // 첫 번째 행 추가
+                    addRow();
+
+                    document.getElementById('table_section').style.display = 'block';
+                });
         }
 
         // 테이블 헤더 구성
         function buildTableHeader() {
             const headerRow = document.getElementById('header_row');
             headerRow.innerHTML = `
-                <th style="width:30px;">#</th>
-                <th style="width:110px;">TM-No</th>
-                <th style="width:120px;">품명</th>
-                <th style="width:70px;">Code</th>
-                <th style="width:50px;">합계</th>
+                <th style="width:25px;">#</th>
+                <th style="width:100px;">TM-No</th>
+                <th style="width:100px;">품명</th>
+                <th style="width:60px;">Code</th>
+                <th style="width:45px;">합계</th>
             `;
 
             currentDefects.forEach(defect => {
                 const th = document.createElement('th');
-                th.innerHTML = `<span class="defect-header">${defect}</span>`;
-                th.style.width = '35px';
+                th.innerHTML = `<span class="defect-header">${defect.name}</span>`;
+                th.style.width = '30px';
+                th.title = `${defect.id}: ${defect.name}`;
                 headerRow.appendChild(th);
             });
 
             const deleteTh = document.createElement('th');
-            deleteTh.style.width = '40px';
+            deleteTh.style.width = '35px';
             deleteTh.textContent = '삭제';
             headerRow.appendChild(deleteTh);
         }
@@ -389,8 +452,10 @@
 
             currentDefects.forEach(defect => {
                 html += `<td><input type="number" min="0" value="" class="defect-input"
-                                    data-defect="${defect}" data-row="${rowCounter}"
-                                    onchange="updateRowTotal(${rowCounter})"></td>`;
+                                    data-defect-id="${defect.id}" data-defect-name="${defect.name}"
+                                    data-row="${rowCounter}"
+                                    onchange="updateRowTotal(${rowCounter})"
+                                    title="${defect.id}: ${defect.name}"></td>`;
             });
 
             html += `<td><button class="delete-btn" onclick="deleteRow(${rowCounter})">X</button></td>`;
@@ -408,7 +473,6 @@
             const row = document.getElementById(`row_${rowId}`);
             if (row) {
                 row.remove();
-                // 행 번호 재정렬
                 renumberRows();
             }
         }
@@ -508,9 +572,10 @@
             const recordDate = document.getElementById('record_date').value;
             const partType = document.getElementById('part_type').value;
             const process = document.getElementById('process').value;
+            const defectType = document.getElementById('defect_type').value;
 
-            if (!recordDate || !partType || !process) {
-                showMessage('날짜, Part, 공정을 선택하세요.', 'error');
+            if (!recordDate || !partType || !process || !defectType) {
+                showMessage('모든 분류를 선택하세요.', 'error');
                 return;
             }
 
@@ -529,7 +594,10 @@
                 inputs.forEach(input => {
                     const value = parseInt(input.value) || 0;
                     if (value > 0) {
-                        defects[input.dataset.defect] = value;
+                        defects[input.dataset.defectId] = {
+                            quantity: value,
+                            name: input.dataset.defectName
+                        };
                     }
                 });
 
@@ -555,6 +623,7 @@
                     date: recordDate,
                     part_type: partType,
                     process: process,
+                    defect_type: defectType,
                     records: dataToSave
                 })
             })
@@ -587,7 +656,8 @@
             .then(res => res.json())
             .then(result => {
                 if (result.success) {
-                    showMessage(`Excel 파일 생성: ${result.filename}`, 'success');
+                    const files = result.filenames.join(', ');
+                    showMessage(`Excel 파일 생성: ${files}`, 'success');
                 } else {
                     showMessage('Excel 출력 실패: ' + result.error, 'error');
                 }
@@ -602,7 +672,12 @@
                 .then(result => {
                     if (result.success) {
                         showMessage('DB 동기화 완료', 'success');
-                        onPartChange();
+                        // 초기화
+                        document.getElementById('part_type').value = '';
+                        document.getElementById('process').innerHTML = '<option value="">선택</option>';
+                        document.getElementById('defect_type').innerHTML = '<option value="">선택</option>';
+                        document.getElementById('table_section').style.display = 'none';
+                        document.getElementById('selection_info').style.display = 'none';
                     } else {
                         showMessage('동기화 실패: ' + result.error, 'error');
                     }
