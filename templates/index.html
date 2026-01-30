@@ -15,7 +15,7 @@
             background: #f5f5f5;
         }
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
             background: white;
             padding: 20px;
@@ -33,9 +33,9 @@
             gap: 20px;
             margin-bottom: 15px;
             flex-wrap: wrap;
+            align-items: flex-end;
         }
         .form-group {
-            flex: 1;
             min-width: 150px;
         }
         label {
@@ -45,7 +45,6 @@
             color: #555;
         }
         select, input {
-            width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -55,47 +54,12 @@
             outline: none;
             border-color: #007bff;
         }
-        .info-box {
-            background: #e7f3ff;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        .info-box span {
-            margin-right: 20px;
-            color: #333;
-        }
-        .info-box strong {
-            color: #007bff;
-        }
-        .defect-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .defect-table th, .defect-table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        .defect-table th {
-            background: #007bff;
-            color: white;
-        }
-        .defect-table tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        .defect-table input {
-            width: 80px;
-            text-align: center;
-        }
         .btn {
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
-            margin-right: 10px;
         }
         .btn-primary {
             background: #007bff;
@@ -109,36 +73,20 @@
             background: #6c757d;
             color: white;
         }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
         .btn:hover {
             opacity: 0.9;
         }
-        .button-row {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        .autocomplete-container {
-            position: relative;
-        }
-        .autocomplete-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-top: none;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-        }
-        .autocomplete-item {
-            padding: 10px;
-            cursor: pointer;
-        }
-        .autocomplete-item:hover {
-            background: #e7f3ff;
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         .message {
             padding: 10px;
@@ -154,34 +102,121 @@
             background: #f8d7da;
             color: #721c24;
         }
-        .defect-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
+
+        /* 테이블 스타일 */
+        .input-table-container {
+            overflow-x: auto;
             margin-top: 20px;
         }
-        .defect-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px;
-            background: #f9f9f9;
-            border-radius: 4px;
+        .input-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
         }
-        .defect-item label {
-            flex: 1;
-            margin: 0;
-            font-weight: normal;
-        }
-        .defect-item input {
-            width: 70px;
+        .input-table th {
+            background: #007bff;
+            color: white;
+            padding: 8px 4px;
             text-align: center;
-        }
-        .total-display {
-            font-size: 18px;
             font-weight: bold;
-            color: #dc3545;
-            margin-top: 15px;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+        .input-table td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .input-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .input-table tr:hover {
+            background: #e7f3ff;
+        }
+        .input-table input[type="number"] {
+            width: 50px;
+            padding: 4px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        .input-table input[type="text"] {
+            width: 100px;
+            padding: 4px;
+        }
+        .input-table .tm-cell {
+            position: relative;
+        }
+        .input-table .info-cell {
+            background: #e7f3ff;
+            font-weight: bold;
+        }
+        .input-table .total-cell {
+            background: #fff3cd;
+            font-weight: bold;
+        }
+        .row-num {
+            background: #f0f0f0;
+            font-weight: bold;
+            width: 30px;
+        }
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        /* 자동완성 */
+        .autocomplete-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 250px;
+            display: none;
+        }
+        .autocomplete-item {
+            padding: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 12px;
+        }
+        .autocomplete-item:hover {
+            background: #e7f3ff;
+        }
+
+        .button-row {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .defect-header {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            min-width: 25px;
+            font-size: 11px;
         }
     </style>
 </head>
@@ -189,7 +224,7 @@
     <div class="container">
         <h1>공정 불량율 관리 시스템</h1>
 
-        <!-- 입력 폼 -->
+        <!-- 상단 선택 영역 -->
         <div class="form-row">
             <div class="form-group">
                 <label>날짜</label>
@@ -209,33 +244,41 @@
                     <option value="">선택하세요</option>
                 </select>
             </div>
-            <div class="form-group autocomplete-container">
-                <label>TM-No (규격)</label>
-                <input type="text" id="tm_no" placeholder="숫자 입력" oninput="searchTmNo()" onfocus="showAutocomplete()">
-                <div class="autocomplete-list" id="autocomplete_list"></div>
+            <div class="form-group">
+                <button class="btn btn-secondary" onclick="syncDB()">DB 새로고침</button>
             </div>
         </div>
 
-        <!-- 품목 정보 표시 -->
-        <div class="info-box" id="info_box" style="display: none;">
-            <span>품명: <strong id="info_품명">-</strong></span>
-            <span>Code: <strong id="info_code">-</strong></span>
-        </div>
-
-        <!-- 불량 항목 입력 -->
-        <div id="defect_section" style="display: none;">
-            <h3>불량 항목 입력</h3>
-            <div class="defect-grid" id="defect_grid"></div>
-            <div class="total-display">
-                합계: <span id="total_count">0</span>
+        <!-- 다중 입력 테이블 -->
+        <div id="table_section" style="display: none;">
+            <div class="section-title">불량 입력 (다중 행)</div>
+            <div class="button-row" style="margin-bottom: 10px;">
+                <button class="btn btn-primary" onclick="addRow()">+ 행 추가</button>
+                <button class="btn btn-danger btn-sm" onclick="clearAllRows()">전체 삭제</button>
             </div>
-        </div>
 
-        <!-- 버튼 -->
-        <div class="button-row">
-            <button class="btn btn-primary" onclick="saveRecord()">저장</button>
-            <button class="btn btn-success" onclick="exportExcel()">Excel 출력</button>
-            <button class="btn btn-secondary" onclick="syncDB()">DB 새로고침</button>
+            <div class="input-table-container">
+                <table class="input-table" id="input_table">
+                    <thead>
+                        <tr id="header_row">
+                            <th style="width:30px;">#</th>
+                            <th style="width:110px;">TM-No</th>
+                            <th style="width:120px;">품명</th>
+                            <th style="width:70px;">Code</th>
+                            <th style="width:50px;">합계</th>
+                            <!-- 불량 항목 헤더는 동적으로 추가 -->
+                            <th style="width:40px;">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table_body">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="button-row">
+                <button class="btn btn-success" onclick="saveAllRows()">전체 저장</button>
+                <button class="btn btn-primary" onclick="exportExcel()">Excel 출력</button>
+            </div>
         </div>
 
         <!-- 메시지 -->
@@ -244,20 +287,15 @@
 
     <script>
         let currentDefects = [];
-        let selectedTmNo = '';
-        let selectedCode = null;
-        let selected품명 = '';
+        let rowCounter = 0;
 
         // Part 변경 시
         function onPartChange() {
             const partType = document.getElementById('part_type').value;
             const processSelect = document.getElementById('process');
 
-            // 공정 목록 초기화
             processSelect.innerHTML = '<option value="">선택하세요</option>';
-            document.getElementById('info_box').style.display = 'none';
-            document.getElementById('defect_section').style.display = 'none';
-            document.getElementById('tm_no').value = '';
+            document.getElementById('table_section').style.display = 'none';
 
             if (!partType) return;
 
@@ -283,19 +321,121 @@
 
         // 공정 변경 시
         function onProcessChange() {
-            document.getElementById('info_box').style.display = 'none';
-            document.getElementById('defect_section').style.display = 'none';
-            document.getElementById('tm_no').value = '';
-            selectedTmNo = '';
-            selectedCode = null;
-            selected품명 = '';
+            const partType = document.getElementById('part_type').value;
+            const process = document.getElementById('process').value;
+
+            if (!partType || !process) {
+                document.getElementById('table_section').style.display = 'none';
+                return;
+            }
+
+            // 테이블 헤더 구성
+            buildTableHeader();
+            // 기존 행 초기화
+            document.getElementById('table_body').innerHTML = '';
+            rowCounter = 0;
+            // 첫 번째 행 추가
+            addRow();
+
+            document.getElementById('table_section').style.display = 'block';
         }
 
-        // TM-No 자동완성 검색
-        function searchTmNo() {
+        // 테이블 헤더 구성
+        function buildTableHeader() {
+            const headerRow = document.getElementById('header_row');
+            headerRow.innerHTML = `
+                <th style="width:30px;">#</th>
+                <th style="width:110px;">TM-No</th>
+                <th style="width:120px;">품명</th>
+                <th style="width:70px;">Code</th>
+                <th style="width:50px;">합계</th>
+            `;
+
+            currentDefects.forEach(defect => {
+                const th = document.createElement('th');
+                th.innerHTML = `<span class="defect-header">${defect}</span>`;
+                th.style.width = '35px';
+                headerRow.appendChild(th);
+            });
+
+            const deleteTh = document.createElement('th');
+            deleteTh.style.width = '40px';
+            deleteTh.textContent = '삭제';
+            headerRow.appendChild(deleteTh);
+        }
+
+        // 행 추가
+        function addRow() {
+            rowCounter++;
+            const tbody = document.getElementById('table_body');
+            const tr = document.createElement('tr');
+            tr.id = `row_${rowCounter}`;
+            tr.dataset.rowId = rowCounter;
+
+            let html = `
+                <td class="row-num">${rowCounter}</td>
+                <td class="tm-cell">
+                    <div class="autocomplete-wrapper">
+                        <input type="text" class="tm-input" placeholder="TM-No"
+                               oninput="searchTmNo(this)" onfocus="searchTmNo(this)"
+                               data-row="${rowCounter}">
+                        <div class="autocomplete-list" id="autocomplete_${rowCounter}"></div>
+                    </div>
+                </td>
+                <td class="info-cell"><span class="품명" data-row="${rowCounter}">-</span></td>
+                <td class="info-cell"><span class="code" data-row="${rowCounter}">-</span></td>
+                <td class="total-cell"><span class="row-total" data-row="${rowCounter}">0</span></td>
+            `;
+
+            currentDefects.forEach(defect => {
+                html += `<td><input type="number" min="0" value="" class="defect-input"
+                                    data-defect="${defect}" data-row="${rowCounter}"
+                                    onchange="updateRowTotal(${rowCounter})"></td>`;
+            });
+
+            html += `<td><button class="delete-btn" onclick="deleteRow(${rowCounter})">X</button></td>`;
+
+            tr.innerHTML = html;
+            tbody.appendChild(tr);
+
+            // 새 행의 TM-No 입력에 포커스
+            const newInput = tr.querySelector('.tm-input');
+            newInput.focus();
+        }
+
+        // 행 삭제
+        function deleteRow(rowId) {
+            const row = document.getElementById(`row_${rowId}`);
+            if (row) {
+                row.remove();
+                // 행 번호 재정렬
+                renumberRows();
+            }
+        }
+
+        // 행 번호 재정렬
+        function renumberRows() {
+            const rows = document.querySelectorAll('#table_body tr');
+            rows.forEach((row, index) => {
+                row.querySelector('.row-num').textContent = index + 1;
+            });
+        }
+
+        // 전체 행 삭제
+        function clearAllRows() {
+            if (confirm('모든 행을 삭제하시겠습니까?')) {
+                document.getElementById('table_body').innerHTML = '';
+                rowCounter = 0;
+                addRow();
+            }
+        }
+
+        // TM-No 검색 (자동완성)
+        function searchTmNo(input) {
             const partType = document.getElementById('part_type').value;
-            const term = document.getElementById('tm_no').value;
-            const list = document.getElementById('autocomplete_list');
+            const term = input.value;
+            const rowId = input.dataset.row;
+            const list = document.getElementById(`autocomplete_${rowId}`);
 
             if (!partType || term.length < 1) {
                 list.style.display = 'none';
@@ -311,7 +451,7 @@
                             const div = document.createElement('div');
                             div.className = 'autocomplete-item';
                             div.textContent = `${item['규격']} - ${item['품명']}`;
-                            div.onclick = () => selectTmNo(item['규격']);
+                            div.onclick = () => selectTmNo(rowId, item['규격']);
                             list.appendChild(div);
                         });
                         list.style.display = 'block';
@@ -321,121 +461,107 @@
                 });
         }
 
-        function showAutocomplete() {
-            const term = document.getElementById('tm_no').value;
-            if (term.length >= 1) {
-                searchTmNo();
-            }
-        }
-
         // TM-No 선택
-        function selectTmNo(tmNo) {
-            document.getElementById('tm_no').value = tmNo;
-            document.getElementById('autocomplete_list').style.display = 'none';
-            selectedTmNo = tmNo;
+        function selectTmNo(rowId, tmNo) {
+            const row = document.getElementById(`row_${rowId}`);
+            const input = row.querySelector('.tm-input');
+            input.value = tmNo;
+
+            const list = document.getElementById(`autocomplete_${rowId}`);
+            list.style.display = 'none';
 
             const partType = document.getElementById('part_type').value;
             const process = document.getElementById('process').value;
-
-            if (!process) {
-                showMessage('공정을 먼저 선택하세요.', 'error');
-                return;
-            }
 
             // TM-No 정보 조회
             fetch(`/api/tm_info?part_type=${partType}&tm_no=${tmNo}&process=${process}`)
                 .then(res => res.json())
                 .then(info => {
-                    if (info.error) {
-                        showMessage('품목 정보를 찾을 수 없습니다.', 'error');
-                        return;
+                    if (!info.error) {
+                        row.querySelector('.품명').textContent = info['품명'] || '-';
+                        row.querySelector('.code').textContent = info['code'] || '-';
                     }
-
-                    selected품명 = info['품명'];
-                    selectedCode = info['code'];
-
-                    document.getElementById('info_품명').textContent = info['품명'] || '-';
-                    document.getElementById('info_code').textContent = info['code'] || '-';
-                    document.getElementById('info_box').style.display = 'block';
-
-                    // 불량 항목 그리드 생성
-                    renderDefectGrid();
                 });
+
+            // 첫 번째 불량 입력 필드로 포커스 이동
+            const firstDefectInput = row.querySelector('.defect-input');
+            if (firstDefectInput) {
+                firstDefectInput.focus();
+            }
         }
 
-        // 불량 항목 그리드 렌더링
-        function renderDefectGrid() {
-            const grid = document.getElementById('defect_grid');
-            grid.innerHTML = '';
+        // 행 합계 업데이트
+        function updateRowTotal(rowId) {
+            const row = document.getElementById(`row_${rowId}`);
+            if (!row) return;
 
-            currentDefects.forEach(defect => {
-                const div = document.createElement('div');
-                div.className = 'defect-item';
-                div.innerHTML = `
-                    <label>${defect}</label>
-                    <input type="number" min="0" value="0" data-defect="${defect}" onchange="updateTotal()">
-                `;
-                grid.appendChild(div);
-            });
-
-            document.getElementById('defect_section').style.display = 'block';
-            updateTotal();
-        }
-
-        // 합계 업데이트
-        function updateTotal() {
-            const inputs = document.querySelectorAll('#defect_grid input');
+            const inputs = row.querySelectorAll('.defect-input');
             let total = 0;
             inputs.forEach(input => {
                 total += parseInt(input.value) || 0;
             });
-            document.getElementById('total_count').textContent = total;
+            row.querySelector('.row-total').textContent = total;
         }
 
-        // 저장
-        function saveRecord() {
+        // 전체 저장
+        function saveAllRows() {
             const recordDate = document.getElementById('record_date').value;
             const partType = document.getElementById('part_type').value;
             const process = document.getElementById('process').value;
 
-            if (!recordDate || !partType || !process || !selectedTmNo) {
-                showMessage('모든 항목을 입력/선택하세요.', 'error');
+            if (!recordDate || !partType || !process) {
+                showMessage('날짜, Part, 공정을 선택하세요.', 'error');
                 return;
             }
 
-            // 불량 데이터 수집
-            const defects = {};
-            const inputs = document.querySelectorAll('#defect_grid input');
-            inputs.forEach(input => {
-                const value = parseInt(input.value) || 0;
-                if (value > 0) {
-                    defects[input.dataset.defect] = value;
+            const rows = document.querySelectorAll('#table_body tr');
+            const dataToSave = [];
+
+            rows.forEach(row => {
+                const tmNo = row.querySelector('.tm-input').value;
+                const code = row.querySelector('.code').textContent;
+                const 품명 = row.querySelector('.품명').textContent;
+
+                if (!tmNo || tmNo === '' || 품명 === '-') return;
+
+                const defects = {};
+                const inputs = row.querySelectorAll('.defect-input');
+                inputs.forEach(input => {
+                    const value = parseInt(input.value) || 0;
+                    if (value > 0) {
+                        defects[input.dataset.defect] = value;
+                    }
+                });
+
+                if (Object.keys(defects).length > 0) {
+                    dataToSave.push({
+                        tm_no: tmNo,
+                        code: code !== '-' ? parseInt(code) : null,
+                        품명: 품명,
+                        defects: defects
+                    });
                 }
             });
 
-            const data = {
-                date: recordDate,
-                part_type: partType,
-                process: process,
-                tm_no: selectedTmNo,
-                code: selectedCode,
-                '품명': selected품명,
-                defects: defects
-            };
+            if (dataToSave.length === 0) {
+                showMessage('저장할 데이터가 없습니다.', 'error');
+                return;
+            }
 
-            fetch('/api/save', {
+            fetch('/api/save_bulk', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify({
+                    date: recordDate,
+                    part_type: partType,
+                    process: process,
+                    records: dataToSave
+                })
             })
             .then(res => res.json())
             .then(result => {
                 if (result.success) {
-                    showMessage('저장되었습니다.', 'success');
-                    // 입력 필드 초기화
-                    const inputs = document.querySelectorAll('#defect_grid input');
-                    inputs.forEach(input => input.value = 0);
-                    updateTotal();
+                    showMessage(`${result.count}건 저장 완료`, 'success');
                 } else {
                     showMessage('저장 실패: ' + result.error, 'error');
                 }
@@ -476,7 +602,6 @@
                 .then(result => {
                     if (result.success) {
                         showMessage('DB 동기화 완료', 'success');
-                        // Part 선택 다시 트리거
                         onPartChange();
                     } else {
                         showMessage('동기화 실패: ' + result.error, 'error');
@@ -496,8 +621,24 @@
 
         // 클릭 시 자동완성 닫기
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.autocomplete-container')) {
-                document.getElementById('autocomplete_list').style.display = 'none';
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                document.querySelectorAll('.autocomplete-list').forEach(list => {
+                    list.style.display = 'none';
+                });
+            }
+        });
+
+        // 키보드 네비게이션 (Enter로 다음 행 추가)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.classList.contains('defect-input')) {
+                const row = e.target.closest('tr');
+                const inputs = row.querySelectorAll('.defect-input');
+                const lastInput = inputs[inputs.length - 1];
+
+                if (e.target === lastInput) {
+                    e.preventDefault();
+                    addRow();
+                }
             }
         });
     </script>

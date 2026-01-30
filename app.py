@@ -80,6 +80,39 @@ def save_record():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/save_bulk', methods=['POST'])
+def save_bulk_records():
+    """다중 불량 데이터 일괄 저장"""
+    data = request.json
+
+    record_date = data.get('date')
+    part_type = data.get('part_type')
+    process_name = data.get('process')
+    records = data.get('records', [])
+
+    if not all([record_date, part_type, process_name]):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    if not records:
+        return jsonify({'error': 'No records to save'}), 400
+
+    try:
+        count = 0
+        for record in records:
+            tm_no = record.get('tm_no')
+            code = record.get('code')
+            품명 = record.get('품명')
+            defects = record.get('defects', {})
+
+            if tm_no and defects:
+                db.save_defect_record(record_date, part_type, process_name, tm_no, code, 품명, defects)
+                count += 1
+
+        return jsonify({'success': True, 'count': count, 'message': f'{count}건 저장 완료'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/export', methods=['POST'])
 def export_excel():
     """일별 Excel 파일 생성"""
